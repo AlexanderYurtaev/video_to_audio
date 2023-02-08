@@ -1,20 +1,24 @@
-from moviepy.editor import *
+from moviepy.editor import VideoFileClip, AudioFileClip
 
 
-# file_location = '/Users/aleksandr/Downloads/Архив с ютуба/Собеседование Python. Разбор вопросов.mp4'
 def video_to_audio():
-    file_location = input("Please enter a full path to file you want to convert to audio.")
-    print(f'file location is: {file_location}')
-    converted_file_name = create_converted_filename(file_location)
+    file_location = input("Please enter a full path to file you want to convert to audio: \n")
+    converted_file_name = create_converted_filename(file_location)[1]
+    file_location = create_converted_filename(file_location)[0]
     print(converted_file_name)
-    audioclip = AudioFileClip(file_location)
-    audioclip.write_audiofile(converted_file_name)
+    print(file_location)
+    video_clip = VideoFileClip(file_location)
+    video_clip.close()
+    audio_clip = video_clip.audio
+    # audio_clip.write_audiofile(f'{converted_file_name}.mp3')
+    audio_clip.close()
 
 
-def create_converted_filename(file_path: str) -> str:
+def create_converted_filename(file_path: str) -> list:
     slash_index = file_path.rindex('/')
     dot_index = file_path.rindex('.')
-    return file_path[slash_index + 1:dot_index]
+    return [file_path[:slash_index+1], file_path[slash_index + 1:dot_index]]
+
 
 # if __name__ == '__main__':
 video_to_audio()
