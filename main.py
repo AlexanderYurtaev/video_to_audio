@@ -1,4 +1,5 @@
 from moviepy.editor import VideoFileClip, AudioFileClip
+from utils import get_parsed_filepath
 
 
 def video_to_audio(cut_start: tuple = None, cut_end: tuple = None):
@@ -11,6 +12,7 @@ def video_to_audio(cut_start: tuple = None, cut_end: tuple = None):
     :param cut_end: Start time of a new .mp3 file. The same logic as above.
     :return:
     """
+
     file_location = input("Please enter a full path to file you want to convert to audio: \n")
     parsed_file_path = get_parsed_filepath(file_location)
     video_clip = VideoFileClip(file_location)
@@ -26,17 +28,6 @@ def video_to_audio(cut_start: tuple = None, cut_end: tuple = None):
 
 def cut_video_audio():
     pass
-
-
-def get_parsed_filepath(file_path: str) -> list:
-    """
-    Function return list of the path to file and it's name.
-    :param file_path: full path to file, include it's name
-    :return: list contain two elements  file path and file name
-    """
-    slash_index = file_path.rindex('/')
-    dot_index = file_path.rindex('.')
-    return [file_path[:slash_index + 1], file_path[slash_index + 1:dot_index]]
 
 
 if __name__ == '__main__':
