@@ -29,7 +29,7 @@ class Window(QMainWindow):
         self.label_hint_tab_1.setGeometry(50, 30, 470, 15)
 
         self.input_filed_tab_1 = QtWidgets.QPlainTextEdit(self.tab_1)
-        self.input_filed_tab_1.setGeometry(50, 50, 540, 50)
+        self.input_filed_tab_1.setGeometry(50, 50, 790, 50)
         self.input_filed_tab_1.setPlaceholderText(
             '/Users/aleksandr/Downloads/Архив с ютуба/DevOps Quality Metrics that Matter_ Forrester Research on 75 '
             'Common Metrics.mp4')
@@ -49,7 +49,7 @@ class Window(QMainWindow):
         self.label_hint_tab_2.setGeometry(50, 30, 470, 15)
 
         self.input_filed_tab_2 = QtWidgets.QPlainTextEdit(self.tab_2)
-        self.input_filed_tab_2.setGeometry(50, 50, 540, 50)
+        self.input_filed_tab_2.setGeometry(50, 50, 790, 50)
         self.input_filed_tab_2.setPlaceholderText(
             '/Users/aleksandr/Downloads/Архив с ютуба/DevOps Quality Metrics that Matter_ Forrester Research on 75 '
             'Common Metrics.mp4')
@@ -84,11 +84,13 @@ class Window(QMainWindow):
     #     print('path')
     #     return path
 
-
     def begin_convert_video_to_mp3(self):
-        video_location = self.input_filed_tab_1.toPlainText()
-        print(video_location)
-        video_to_audio(video_location)
+        try:
+            video_location = self.input_filed_tab_1.toPlainText()
+            print(video_location)
+            video_to_audio(video_location)
+        except ValueError as ex:
+            print("You should enter an address of file before push the button Begin" )
 
     def begin_cut_file(self):
         pass
