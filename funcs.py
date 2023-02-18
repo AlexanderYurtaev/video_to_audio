@@ -1,22 +1,10 @@
 import os
-
 from moviepy.editor import VideoFileClip, AudioFileClip
 from utils import get_parsed_filepath, download_from_youtube
 
 
-def video_to_audio(cut_start: tuple = None, cut_end: tuple = None, youtube: bool = False):
-    """
-    Function convert video file to mp3. New file will be created with the same name as video file and in
-     the same location.
-    :param cut_start: Start time of a new .mp3 file. Should be in format seconds (15.35), in (min, sec),
-    in (hour, min, sec). e.g. 15, 20 - means new file will start from 15 min 20 sec of original video file.
-    2, 19, 0 - means 2 hour 19 min 0 sec.
-    :param cut_end: Start time of a new .mp3 file. The same logic as above.
-    :param youtube: is Youtube - source of file which should be converted?
-    :return:
-    """
+def video_to_audio(video_location: str, cut_start: tuple = None, cut_end: tuple = None, youtube: bool = False):
 
-    video_location = input("Please enter a full path to file you want to convert to audio: \n")
 
     if 'https://youtu' in video_location:
         video_location = download_from_youtube(video_location)
