@@ -32,7 +32,6 @@ class Window(QMainWindow):
         self.label_result_details.setStyleSheet('background-color: rgb(233, 176, 99);padding :15px')
         self.label_result_details.setWordWrap(True)
 
-
         self.tab_widget = QtWidgets.QTabWidget(self)
         self.tab_widget.setGeometry(0, 69, 900, 261)
         self.tab_widget.currentChanged.connect(self.print_active_tab_index)
@@ -55,17 +54,23 @@ class Window(QMainWindow):
         self.button_begin_tab_1.setText('Начать')
         self.button_begin_tab_1.clicked.connect(self.begin_convert_video_to_mp3)
 
-        self.label_cut_file = QtWidgets.QLabel(self.tab_1)
-        self.label_hint_tab_1.setText('Редактировать начало и конец:')
-        self.label_hint_tab_1.setGeometry(50, 110, 210, 15)
+        # self.label_cut_file = QtWidgets.QLabel(self.tab_1)
+        # self.label_hint_tab_1.setText('Редактировать начало и конец:')
+        # self.label_hint_tab_1.setGeometry(50, 110, 210, 15)
+        self.checkbox_cut_tab_1 = QtWidgets.QCheckBox(self.tab_1)
+        self.checkbox_cut_tab_1.setText('Редактировать время начала и конца')
+        self.checkbox_cut_tab_1.setGeometry(50, 110, 260, 15)
+        self.checkbox_cut_tab_1.stateChanged.connect(self.do_check)
 
         self.input_start_tab_1 = QtWidgets.QPlainTextEdit(self.tab_1)
-        self.input_start_tab_1.setGeometry(50, 130, 70, 23)
+        self.input_start_tab_1.setGeometry(70, 130, 70, 23)
         self.input_start_tab_1.setPlaceholderText('00:00:00')
+        self.input_start_tab_1.hide()
 
         self.input_end_tab_1 = QtWidgets.QPlainTextEdit(self.tab_1)
-        self.input_end_tab_1.setGeometry(130, 130, 70, 23)
+        self.input_end_tab_1.setGeometry(150, 130, 70, 23)
         self.input_end_tab_1.setPlaceholderText('02:30:20')
+        self.input_end_tab_1.hide()
 
         self.tab_widget.addTab(self.tab_1, 'Видео в mp3')
 
@@ -107,16 +112,24 @@ class Window(QMainWindow):
 
         self.tab_widget.addTab(self.tab_3, 'Скачать видео')
 
-
     def begin_convert_video_to_mp3(self):
         # обнуление контента лейблов чет не работает. разобраться
         # self.label_result.clear()
         # self.label_result_details.clear()
         start_time = self.input_start_tab_1.toPlainText()
+        end_time = self.input_end_tab_1.toPlainText()
 
         try:
             video_location = self.input_filed_tab_1.toPlainText()
-            saved_file_path = video_to_audio(video_location)
+            if start_time != '' and end_time != '':
+                saved_file_path = video_to_audio(video_location, start_time, end_time)
+            elif start_time != '' and end_time == '':
+                saved_file_path = video_to_audio(video_location, cut_start=start_time)
+            elif start_time == '' and end_time == '':
+                saved_file_path = video_to_audio(video_location, start_time, end_time)
+            elif start_time == '' and end_time != '':
+                saved_file_path = video_to_audio(video_location, cut_end=end_time)
+
             self.label_result.setText('УСПЕШНО')
             self.label_result.setStyleSheet('color: green')
             self.label_result_details.setText(f'Файл сохранен:\n{saved_file_path}')
@@ -152,7 +165,6 @@ class Window(QMainWindow):
             self.label_result_details.setText(
                 f'You should enter correct address of the video before push the button Begin !')
 
-
     def begin_cut_file(self):
         pass
 
@@ -161,6 +173,15 @@ class Window(QMainWindow):
         print(current_tab_index)
         self.label_result.clear()
         self.label_result_details.clear()
+
+    # function which check if check box cut start/end is checked
+    def do_check(self):
+        if self.checkbox_cut_tab_1.isChecked():
+            self.input_start_tab_1.show()
+            self.input_end_tab_1.show()
+        else:
+            self.input_start_tab_1.hide()
+            self.input_end_tab_1.hide()
 
 
 def start_application():

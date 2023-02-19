@@ -3,7 +3,7 @@ from moviepy.editor import VideoFileClip, AudioFileClip
 from utils import get_parsed_filepath, download_from_youtube
 
 
-def video_to_audio(video_location: str, cut_start: tuple = None, cut_end: tuple = None, youtube: bool = False):
+def video_to_audio(video_location: str, cut_start=0, cut_end=None, youtube: bool = False):
     if 'https://www.youtube' in video_location or 'https://youtu' in video_location:
         video_location = download_from_youtube(video_location)
         youtube = True
@@ -15,7 +15,7 @@ def video_to_audio(video_location: str, cut_start: tuple = None, cut_end: tuple 
     video_clip = VideoFileClip(video_location)
     audio_clip = video_clip.audio
 
-    if cut_start is not None and cut_end is not None:
+    if cut_start != '' or cut_end != '':
         cut_clip = audio_clip.subclip(cut_start, cut_end)
         cut_clip.write_audiofile(f'{file_path}{file_name}.mp3')
     else:
