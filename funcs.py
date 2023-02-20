@@ -4,6 +4,16 @@ from utils import get_parsed_filepath, download_from_youtube
 
 
 def video_to_audio(video_location: str, cut_start=0, cut_end=None, youtube: bool = False):
+    """
+    Function convert video file to mp3. New file will be created with the same name as video file and in
+     the same location.
+    :param cut_start: Start time of a new .mp3 file. Should be in format seconds (15.35), in (min, sec),
+    in (hour, min, sec). e.g. 15, 20 - means new file will start from 15 min 20 sec of original video file.
+    2, 19, 0 - means 2 hour 19 min 0 sec.
+    :param cut_end: Start time of a new .mp3 file. The same logic as above.
+    :param youtube: is Youtube - source of file which should be converted?
+    :return:
+    """
     if 'https://www.youtube' in video_location or 'https://youtu' in video_location:
         video_location = download_from_youtube(video_location)
         youtube = True
@@ -14,12 +24,13 @@ def video_to_audio(video_location: str, cut_start=0, cut_end=None, youtube: bool
 
     video_clip = VideoFileClip(video_location)
     audio_clip = video_clip.audio
+    nbytes = 2
 
     if cut_start != '' or cut_end != '':
         cut_clip = audio_clip.subclip(cut_start, cut_end)
-        cut_clip.write_audiofile(f'{file_path}{file_name}.mp3')
+        cut_clip.write_audiofile(f'{file_path}{file_name}.mp3', nbytes=4)
     else:
-        audio_clip.write_audiofile(f'{file_path}{file_name}.mp3')
+        audio_clip.write_audiofile(f'{file_path}{file_name}.mp3', nbytes=4)
 
     video_clip.close()
     audio_clip.close()

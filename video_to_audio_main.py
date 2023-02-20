@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt
 import sys
-from funcs import video_to_audio, download_from_youtube, cut_audio_file
+from funcs import video_to_audio, download_video_from_youtube, cut_audio_file
 
 
 class Window(QMainWindow):
@@ -262,6 +262,8 @@ class Window(QMainWindow):
 
 
 def start_application():
+    import funcs
+    import utils
     app = QApplication(sys.argv)
     window = Window()
     window.show()

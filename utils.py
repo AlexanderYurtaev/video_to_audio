@@ -26,10 +26,10 @@ def download_from_youtube(uri: str, output_type: str = 'Video', path_to_save: st
     full_name = f'{file_name}.{file_extension}'
     path_to_save = f'{os.path.expanduser("~")}/Downloads'
 
-    # vd1080 = video.streams.filter()
-    # for i in vd1080:
-    #     print(i)
-    # print('\n')
+    vd1080 = video.streams.filter()
+    for i in vd1080:
+        print(i)
+    print('\n')
     # video.streams.get_by_resolution('1080p').download(output_path=path_to_save, filename=full_name)
     # video.streams.get_by_itag(299).download(output_path=path_to_save, filename=full_name)
     video.streams.get_highest_resolution().download(output_path=path_to_save, filename=full_name)
