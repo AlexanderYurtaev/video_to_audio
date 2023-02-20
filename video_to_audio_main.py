@@ -54,10 +54,10 @@ class Window(QMainWindow):
         self.button_begin_tab_1.setText('Начать')
         self.button_begin_tab_1.clicked.connect(self.begin_convert_video_to_mp3)
 
-        self.checkbox_cut_tab_1 = QtWidgets.QCheckBox(self.tab_1)
-        self.checkbox_cut_tab_1.setText('Редактировать время начала и конца')
-        self.checkbox_cut_tab_1.setGeometry(50, 110, 260, 15)
-        self.checkbox_cut_tab_1.stateChanged.connect(self.do_check)
+        self.checkbox_crop_tab_1 = QtWidgets.QCheckBox(self.tab_1)
+        self.checkbox_crop_tab_1.setText('Редактировать время начала и конца')
+        self.checkbox_crop_tab_1.setGeometry(50, 110, 260, 15)
+        self.checkbox_crop_tab_1.stateChanged.connect(self.do_check_crop_tab2)
 
         self.input_start_tab_1 = QtWidgets.QPlainTextEdit(self.tab_1)
         self.input_start_tab_1.setGeometry(70, 130, 70, 23)
@@ -89,10 +89,11 @@ class Window(QMainWindow):
         self.button_begin_tab_2.setText('Начать')
         self.button_begin_tab_2.clicked.connect(self.begin_cut_mp3)
 
-        self.checkbox_cut_tab_2 = QtWidgets.QCheckBox(self.tab_2)
-        self.checkbox_cut_tab_2.setText('Редактировать время начала и конца')
-        self.checkbox_cut_tab_2.setGeometry(50, 110, 260, 15)
-        self.checkbox_cut_tab_2.stateChanged.connect(self.do_check)
+        # чекбокс и поля для обрезания файла
+        self.checkbox_crop_tab_2 = QtWidgets.QCheckBox(self.tab_2)
+        self.checkbox_crop_tab_2.setText('Редактировать время начала и конца')
+        self.checkbox_crop_tab_2.setGeometry(50, 110, 260, 15)
+        self.checkbox_crop_tab_2.stateChanged.connect(self.do_check_crop_tab2)
 
         self.input_start_tab_2 = QtWidgets.QPlainTextEdit(self.tab_2)
         self.input_start_tab_2.setGeometry(70, 130, 70, 23)
@@ -103,6 +104,24 @@ class Window(QMainWindow):
         self.input_end_tab_2.setGeometry(150, 130, 70, 23)
         self.input_end_tab_2.setPlaceholderText('02:30:20')
         self.input_end_tab_2.hide()
+
+        # чекбокс для вырезания из файла
+        self.checkbox_cut_tab_2 = QtWidgets.QCheckBox(self.tab_2)
+        # hide until fixed bug https://github.com/Zulko/moviepy/pull/1757
+        self.checkbox_cut_tab_2.hide()
+        self.checkbox_cut_tab_2.setText('Вырезать участок')
+        self.checkbox_cut_tab_2.setGeometry(350, 110, 260, 15)
+        self.checkbox_cut_tab_2.stateChanged.connect(self.do_check_cut_tab2)
+
+        self.input_start_cut_tab_2 = QtWidgets.QPlainTextEdit(self.tab_2)
+        self.input_start_cut_tab_2.setGeometry(370, 130, 70, 23)
+        self.input_start_cut_tab_2.setPlaceholderText('00:31:20')
+        self.input_start_cut_tab_2.hide()
+
+        self.input_end_cut_tab_2 = QtWidgets.QPlainTextEdit(self.tab_2)
+        self.input_end_cut_tab_2.setGeometry(450, 130, 70, 23)
+        self.input_end_cut_tab_2.setPlaceholderText('01:30:11')
+        self.input_end_cut_tab_2.hide()
 
         self.tab_widget.addTab(self.tab_2, 'Обрезать mp3')
 
@@ -153,21 +172,37 @@ class Window(QMainWindow):
                 f'You should enter correct address of the file before push the button Begin !')
 
     def begin_cut_mp3(self):
-        start_time = self.input_start_tab_2.toPlainText()
-        end_time = self.input_end_tab_2.toPlainText()
+        if self.checkbox_cut_tab_2.isChecked() and self.checkbox_crop_tab_2.isChecked():
+            self.label_result.setText('ЧТО-ТО ПОШЛО НЕ ТАК !')
+            self.label_result.setStyleSheet('color: red')
+            self.label_result_details.setText(
+                f'Выберите только один вариант модификации аудио файла !')
+            return
+
+        if self.checkbox_crop_tab_2.isChecked():
+            print('here0')
+            start_time = self.input_start_tab_2.toPlainText()
+            end_time = self.input_end_tab_2.toPlainText()
+            mode = 'crop'
+            if start_time == '' and end_time == '':
+                self.label_result.setText('ЧТО-ТО ПОШЛО НЕ ТАК !')
+                self.label_result.setStyleSheet('color: red')
+                self.label_result_details.setText(f'Enter start time or/and end time.')
+        elif self.checkbox_cut_tab_2.isChecked():
+            start_time = self.input_start_cut_tab_2.toPlainText()
+            end_time = self.input_end_cut_tab_2.toPlainText()
+            mode = 'cut'
+            if start_time == '' or end_time == '':
+                self.label_result.setText('ЧТО-ТО ПОШЛО НЕ ТАК !')
+                self.label_result.setStyleSheet('color: red')
+                self.label_result_details.setText(
+                    f'В режиме "Вырезать участок" должно быть указано и время начала и время конца.')
+                return print('here')
+
         audio_location = self.input_filed_tab_2.toPlainText()
 
         try:
-            if start_time != '' and end_time == '':
-                saved_file_path = cut_audio_file(audio_location, cut_start=start_time)
-            elif start_time == '' and end_time != '':
-                saved_file_path = cut_audio_file(audio_location, cut_end=end_time)
-            # TO DO
-            # elif start_time < end_time or start_time == end_time:
-            #     raise Exception
-            else:
-                saved_file_path = cut_audio_file(audio_location, start_time, end_time)
-
+            saved_file_path = cut_audio_file(audio_location, start_time, end_time, mode)
             self.label_result.setText('УСПЕШНО')
             self.label_result.setStyleSheet('color: green')
             self.label_result_details.setText(f'Файл сохранен:\n{saved_file_path}')
@@ -176,6 +211,7 @@ class Window(QMainWindow):
             self.label_result.setStyleSheet('color: red')
             self.label_result_details.setText(
                 f'You should enter correct address of the video before push the button Begin !')
+            print(ex)
 
     def begin_dowload_video(self):
         try:
@@ -190,40 +226,39 @@ class Window(QMainWindow):
             self.label_result_details.setText(
                 f'You should enter correct address of the video before push the button Begin !')
 
-    def begin_cut_file(self):
-        pass
-
     def print_active_tab_index(self):
-        current_tab_index = self.tab_widget.currentIndex()
-        print(current_tab_index)
         self.label_result.clear()
         self.label_result_details.clear()
 
     # function which check if check box cut start/end is checked
-    def do_check(self):
-        current_tab_index = self.tab_widget.currentIndex()
-        match current_tab_index:
+    def do_check_crop_tab2(self):
+        match self.tab_widget.currentIndex():
             case 0:
-                if self.checkbox_cut_tab_1.isChecked():
+                if self.checkbox_crop_tab_1.isChecked():
                     self.input_start_tab_1.show()
                     self.input_end_tab_1.show()
                 else:
                     self.input_start_tab_1.hide()
                     self.input_end_tab_1.hide()
             case 1:
-                if self.checkbox_cut_tab_2.isChecked():
+                # if self.checkbox_cut_tab_2.isChecked():
+                # self.checkbox_cut_tab_2.setCheckState(0)
+                if self.checkbox_crop_tab_2.isChecked():
                     self.input_start_tab_2.show()
                     self.input_end_tab_2.show()
                 else:
                     self.input_start_tab_2.hide()
                     self.input_end_tab_2.hide()
 
-        # if self.checkbox_cut_tab_1.isChecked():
-        #     self.input_start_tab_1.show()
-        #     self.input_start_tab_1.show()
-        # else:
-        #     self.input_start_tab_1.hide()
-        #     self.input_end_tab_1.hide()
+    def do_check_cut_tab2(self):
+        # if self.checkbox_crop_tab_2.isChecked():
+        #     self.checkbox_crop_tab_2.setCheckState(0)
+        if self.checkbox_cut_tab_2.isChecked():
+            self.input_start_cut_tab_2.show()
+            self.input_end_cut_tab_2.show()
+        else:
+            self.input_start_cut_tab_2.hide()
+            self.input_end_cut_tab_2.hide()
 
 
 def start_application():

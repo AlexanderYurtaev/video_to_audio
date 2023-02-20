@@ -35,15 +35,20 @@ def cut_video_audio():
     pass
 
 
-def cut_audio_file(audio_location: str, cut_start=0, cut_end=None):
+def cut_audio_file(audio_location: str, cut_start=0, cut_end=None, mode='crop'):
     parsed_file_path = get_parsed_filepath(audio_location)
     file_path = parsed_file_path[0]
     file_name = parsed_file_path[1]
 
     audio_clip = AudioFileClip(audio_location)
+    match mode:
+        case 'crop':
+            cut_clip = audio_clip.subclip(cut_start, cut_end)
+            cut_clip.write_audiofile(f'{file_path}{file_name}(1).mp3')
+        case 'cut':
+            cut_clip = audio_clip.cutout(cut_start, cut_end)
+            cut_clip.write_audiofile(f'{file_path}{file_name}(1).mp3')
 
-    cut_clip = audio_clip.subclip(cut_start, cut_end)
-    cut_clip.write_audiofile(f'{file_path}{file_name}(1).mp3')
     audio_clip.close()
 
     saved_file_path = f'{file_path}{file_name}(1).mp3'
@@ -63,12 +68,5 @@ def download_video_from_youtube(video_location: str):
     video_clip = VideoFileClip(video_location)
     video_clip.close()
 
-    # if youtube:
-    #     os.remove(video_location)
-
     saved_file_path = f'{file_path}{file_name}.mp4'
     return saved_file_path
-
-
-if __name__ == '__main__':
-    video_to_audio()
