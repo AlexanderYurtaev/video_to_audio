@@ -35,6 +35,21 @@ def cut_video_audio():
     pass
 
 
+def cut_audio_file(audio_location: str, cut_start=0, cut_end=None):
+    parsed_file_path = get_parsed_filepath(audio_location)
+    file_path = parsed_file_path[0]
+    file_name = parsed_file_path[1]
+
+    audio_clip = AudioFileClip(audio_location)
+
+    cut_clip = audio_clip.subclip(cut_start, cut_end)
+    cut_clip.write_audiofile(f'{file_path}{file_name}(1).mp3')
+    audio_clip.close()
+
+    saved_file_path = f'{file_path}{file_name}(1).mp3'
+    return saved_file_path
+
+
 def download_video_from_youtube(video_location: str):
     if 'https://www.youtube' in video_location or 'https://youtu' in video_location:
         video_location = download_from_youtube(video_location)

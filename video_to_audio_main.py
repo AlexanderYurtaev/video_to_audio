@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import Qt
 import sys
-from funcs import video_to_audio, download_from_youtube
+from funcs import video_to_audio, download_from_youtube, cut_audio_file
 
 
 class Window(QMainWindow):
@@ -54,9 +54,6 @@ class Window(QMainWindow):
         self.button_begin_tab_1.setText('Начать')
         self.button_begin_tab_1.clicked.connect(self.begin_convert_video_to_mp3)
 
-        # self.label_cut_file = QtWidgets.QLabel(self.tab_1)
-        # self.label_hint_tab_1.setText('Редактировать начало и конец:')
-        # self.label_hint_tab_1.setGeometry(50, 110, 210, 15)
         self.checkbox_cut_tab_1 = QtWidgets.QCheckBox(self.tab_1)
         self.checkbox_cut_tab_1.setText('Редактировать время начала и конца')
         self.checkbox_cut_tab_1.setGeometry(50, 110, 260, 15)
@@ -85,12 +82,27 @@ class Window(QMainWindow):
         self.input_filed_tab_2.setGeometry(50, 50, 790, 50)
         self.input_filed_tab_2.setPlaceholderText(
             '/Users/aleksandr/Downloads/Архив с ютуба/DevOps Quality Metrics that Matter_ Forrester Research on 75 '
-            'Common Metrics.mp4')
+            'Common Metrics.mp3')
 
         self.button_begin_tab_2 = QtWidgets.QPushButton(self.tab_2)
         self.button_begin_tab_2.setGeometry(290, 180, 261, 41)
         self.button_begin_tab_2.setText('Начать')
         self.button_begin_tab_2.clicked.connect(self.begin_cut_mp3)
+
+        self.checkbox_cut_tab_2 = QtWidgets.QCheckBox(self.tab_2)
+        self.checkbox_cut_tab_2.setText('Редактировать время начала и конца')
+        self.checkbox_cut_tab_2.setGeometry(50, 110, 260, 15)
+        self.checkbox_cut_tab_2.stateChanged.connect(self.do_check)
+
+        self.input_start_tab_2 = QtWidgets.QPlainTextEdit(self.tab_2)
+        self.input_start_tab_2.setGeometry(70, 130, 70, 23)
+        self.input_start_tab_2.setPlaceholderText('00:00:00')
+        self.input_start_tab_2.hide()
+
+        self.input_end_tab_2 = QtWidgets.QPlainTextEdit(self.tab_2)
+        self.input_end_tab_2.setGeometry(150, 130, 70, 23)
+        self.input_end_tab_2.setPlaceholderText('02:30:20')
+        self.input_end_tab_2.hide()
 
         self.tab_widget.addTab(self.tab_2, 'Обрезать mp3')
 
@@ -121,14 +133,15 @@ class Window(QMainWindow):
 
         try:
             video_location = self.input_filed_tab_1.toPlainText()
-            if start_time != '' and end_time != '':
-                saved_file_path = video_to_audio(video_location, start_time, end_time)
-            elif start_time != '' and end_time == '':
+            if start_time != '' and end_time == '':
                 saved_file_path = video_to_audio(video_location, cut_start=start_time)
-            elif start_time == '' and end_time == '':
-                saved_file_path = video_to_audio(video_location, start_time, end_time)
             elif start_time == '' and end_time != '':
                 saved_file_path = video_to_audio(video_location, cut_end=end_time)
+            # TO DO
+            # elif start_time < end_time or start_time == end_time:
+            #     raise Exception
+            else:
+                saved_file_path = video_to_audio(video_location, start_time, end_time)
 
             self.label_result.setText('УСПЕШНО')
             self.label_result.setStyleSheet('color: green')
@@ -140,12 +153,24 @@ class Window(QMainWindow):
                 f'You should enter correct address of the file before push the button Begin !')
 
     def begin_cut_mp3(self):
+        start_time = self.input_start_tab_2.toPlainText()
+        end_time = self.input_end_tab_2.toPlainText()
+        audio_location = self.input_filed_tab_2.toPlainText()
+
         try:
-            file_location = self.input_filed_tab_2.toPlainText()
-            saved_file_path = download_from_youtube(file_location)
+            if start_time != '' and end_time == '':
+                saved_file_path = cut_audio_file(audio_location, cut_start=start_time)
+            elif start_time == '' and end_time != '':
+                saved_file_path = cut_audio_file(audio_location, cut_end=end_time)
+            # TO DO
+            # elif start_time < end_time or start_time == end_time:
+            #     raise Exception
+            else:
+                saved_file_path = cut_audio_file(audio_location, start_time, end_time)
+
             self.label_result.setText('УСПЕШНО')
             self.label_result.setStyleSheet('color: green')
-            self.label_result_details.setText(f'Файл сохранен в разрешении 720p:\n{saved_file_path}')
+            self.label_result_details.setText(f'Файл сохранен:\n{saved_file_path}')
         except Exception as ex:
             self.label_result.setText('ЧТО-ТО ПОШЛО НЕ ТАК !')
             self.label_result.setStyleSheet('color: red')
@@ -176,12 +201,29 @@ class Window(QMainWindow):
 
     # function which check if check box cut start/end is checked
     def do_check(self):
-        if self.checkbox_cut_tab_1.isChecked():
-            self.input_start_tab_1.show()
-            self.input_end_tab_1.show()
-        else:
-            self.input_start_tab_1.hide()
-            self.input_end_tab_1.hide()
+        current_tab_index = self.tab_widget.currentIndex()
+        match current_tab_index:
+            case 0:
+                if self.checkbox_cut_tab_1.isChecked():
+                    self.input_start_tab_1.show()
+                    self.input_end_tab_1.show()
+                else:
+                    self.input_start_tab_1.hide()
+                    self.input_end_tab_1.hide()
+            case 1:
+                if self.checkbox_cut_tab_2.isChecked():
+                    self.input_start_tab_2.show()
+                    self.input_end_tab_2.show()
+                else:
+                    self.input_start_tab_2.hide()
+                    self.input_end_tab_2.hide()
+
+        # if self.checkbox_cut_tab_1.isChecked():
+        #     self.input_start_tab_1.show()
+        #     self.input_start_tab_1.show()
+        # else:
+        #     self.input_start_tab_1.hide()
+        #     self.input_end_tab_1.hide()
 
 
 def start_application():
