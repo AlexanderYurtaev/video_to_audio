@@ -30,7 +30,7 @@ OPTIONS = {
                  'funcs',
                  'charset_normalizer'
                  ],
-    'iconfile': 'myicon.icns',
+    'iconfile': 'icon.icns',
     'argv_emulation': False
 }
 
