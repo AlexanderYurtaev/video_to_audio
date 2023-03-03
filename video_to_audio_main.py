@@ -1,9 +1,46 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
 import sys
-from funcs import video_to_audio, download_video_from_youtube, cut_audio_file, download_from_youtube
+
+from funcs import video_to_audio, download_video_from_youtube, cut_audio_file
+
+import sys
+
+
+class ProgressDownload(QThread):
+    value_changed = pyqtSignal(int)
+    print('ProgressDownload object created')
+    def __init__(self, video_location, label_result, label_result_details):
+        super().__init__()
+        self.video_location = video_location
+        self.saved_file_path = ''
+        self.progress = 0
+        self.label_result = label_result
+        self.label_result_details = label_result_details
+
+    def run(self) -> None:
+        print('run initiated')
+        while self.progress < 100:
+            try:
+                print('try in run')
+                self.saved_file_path = download_video_from_youtube(self.video_location, self.progress_func)
+                self.label_result.setText('УСПЕШНО')
+                self.label_result.setStyleSheet('color: green')
+                self.label_result_details.setText(f'Файл сохранен в:\n{self.saved_file_path}')
+            except Exception as ex:
+                print('Something wrong in download thread')
+                self.label_result.setText('ЧТО-ТО ПОШЛО НЕ ТАК !')
+                self.label_result.setStyleSheet('color: red')
+                self.label_result_details.setText(
+                    f'You should enter correct address of the video before push the button Begin !')
+
+    def progress_func(self, streams, chunk: bytes, bytes_remaining: int):
+        content_size = streams.filesize
+        self.progress = (abs(bytes_remaining - content_size)) * 100 // content_size
+        print(f'progress in progress func {self.progress}')
+        self.value_changed.emit(self.progress)
 
 
 class Window(QMainWindow):
@@ -12,7 +49,7 @@ class Window(QMainWindow):
         self.setWindowTitle('Video to Audio Converter')
         self.setGeometry(900, 500, 900, 500)
 
-        # глaвный label
+        # main label
         self.label_main = QtWidgets.QLabel(self)
         self.label_main.setText('Video to Audio Converter')
         self.label_main.setGeometry(280, 10, 340, 40)
@@ -52,7 +89,26 @@ class Window(QMainWindow):
         self.button_begin_tab_1 = QtWidgets.QPushButton(self.tab_1)
         self.button_begin_tab_1.setGeometry(290, 180, 261, 41)
         self.button_begin_tab_1.setText('Начать')
+        # self.button_begin_tab_1.setStyleSheet('border: 2px solid #f66867;border-radius: 30;')
+        # self.button_begin_tab_1.setStyleSheet('border-radius: 30px;')
         self.button_begin_tab_1.clicked.connect(self.begin_convert_video_to_mp3)
+        # self.button_begin_tab_1.setStyleSheet("""
+        #     QPushButton {'color: white; background-color: #fb5b5d; border: 2px; border-radius: 30;'}
+        #     QPushButton:pressed {'background-color: #fa4244;'}
+        #     """)
+        # self.button_begin_tab_1.setStyleSheet("QPushButton {background: #363b41; border-top-left-radius: 10px; border-bottom-left-radius: 10px;}")
+        # self.button_begin_tab_1.setStyleSheet("QPushButton:pressed {background-color: green;}")
+
+        # background - color: rgb(170, 170, 255);
+        # color: rgb(255, 255, 255);
+        # border - radius: 30px;
+        # border: 2px groove gray;
+        # font: 9pt "AcadEref";
+        # border - style: outset;
+
+        self.button_begin_tab_1.setStyleSheet(
+            "color: white; background: #363b41; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px;")
+        self.button_begin_tab_1.setStyleSheet("QPushButton:pressed {background-color: green;}")
 
         self.checkbox_crop_tab_1 = QtWidgets.QCheckBox(self.tab_1)
         self.checkbox_crop_tab_1.setText('Редактировать время начала и конца')
@@ -136,10 +192,13 @@ class Window(QMainWindow):
         self.input_filed_tab_3.setGeometry(50, 50, 790, 50)
         self.input_filed_tab_3.setPlaceholderText('https://www.youtube.com/watch?v=lUZUsRLAoN4')
 
+        self.progress_bar = QtWidgets.QProgressBar(self.tab_3)
+        self.progress_bar.setGeometry(150, 100, 550, 100)
+
         self.button_begin_tab_3 = QtWidgets.QPushButton(self.tab_3)
         self.button_begin_tab_3.setGeometry(290, 180, 261, 41)
         self.button_begin_tab_3.setText('Начать')
-        self.button_begin_tab_3.clicked.connect(self.begin_dowload_video)
+        self.button_begin_tab_3.clicked.connect(self.on_button_clicked_download_video)
 
         self.tab_widget.addTab(self.tab_3, 'Скачать видео')
 
@@ -213,10 +272,29 @@ class Window(QMainWindow):
                 f'You should enter correct address of the video before push the button Begin !')
             print(ex)
 
+    def on_button_clicked_download_video(self):
+        print('on button clicked func')
+
+        self.downloader = ProgressDownload(video_location=self.input_filed_tab_3.toPlainText(),
+                                           label_result=self.label_result,
+                                           label_result_details=self.label_result_details)
+        self.downloader.value_changed.connect(self.on_bar_value_changed)
+        self.downloader.finished.connect(self.download_finished)
+        self.downloader.start()
+
+    def download_finished(self):
+        del self.downloader
+
+    def on_bar_value_changed(self, value):
+        self.progress_bar.setValue(value)
+
     def begin_dowload_video(self):
+
         try:
             video_location = self.input_filed_tab_3.toPlainText()
-            saved_file_path = download_from_youtube(video_location)
+            # print(utils.progress)
+            # self.progress_bar.setValue(utils.progress)
+            saved_file_path = download_video_from_youtube(video_location, self.progress_func)
             self.label_result.setText('УСПЕШНО')
             self.label_result.setStyleSheet('color: green')
             self.label_result_details.setText(f'Файл сохранен в:\n{saved_file_path}')
@@ -225,6 +303,14 @@ class Window(QMainWindow):
             self.label_result.setStyleSheet('color: red')
             self.label_result_details.setText(
                 f'You should enter correct address of the video before push the button Begin !')
+
+    def progress_func(self, streams, chunk: bytes, bytes_remaining: int):
+        content_size = streams.filesize
+        progress = (abs(bytes_remaining - content_size)) * 100 // content_size
+        self.progress_bar.setValue(progress)
+        # MUST BE REWRITED USING THREADS !!!
+        QApplication.processEvents()
+        print(progress)
 
     def print_active_tab_index(self):
         self.label_result.clear()

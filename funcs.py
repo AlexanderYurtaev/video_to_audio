@@ -3,6 +3,7 @@ from moviepy.editor import VideoFileClip, AudioFileClip
 from utils import get_parsed_filepath, download_from_youtube
 
 
+
 def video_to_audio(video_location: str, cut_start=0, cut_end=None, youtube: bool = False):
     """
     Function convert video file to mp3. New file will be created with the same name as video file and in
@@ -42,10 +43,6 @@ def video_to_audio(video_location: str, cut_start=0, cut_end=None, youtube: bool
     return saved_file_path
 
 
-def cut_video_audio():
-    pass
-
-
 def cut_audio_file(audio_location: str, cut_start=0, cut_end=None, mode='crop'):
     parsed_file_path = get_parsed_filepath(audio_location)
     file_path = parsed_file_path[0]
@@ -66,9 +63,10 @@ def cut_audio_file(audio_location: str, cut_start=0, cut_end=None, mode='crop'):
     return saved_file_path
 
 
-def download_video_from_youtube(video_location: str):
+def download_video_from_youtube(video_location: str, func):
     if 'https://www.youtube' in video_location or 'https://youtu' in video_location:
-        video_location = download_from_youtube(video_location)
+        print('funcs here')
+        video_location = download_from_youtube(video_location, func)
     else:
         print('Incorrect URI')
 
@@ -81,3 +79,4 @@ def download_video_from_youtube(video_location: str):
 
     saved_file_path = f'{file_path}{file_name}.mp4'
     return saved_file_path
+
