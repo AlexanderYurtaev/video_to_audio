@@ -8,7 +8,7 @@ Usage:
 from setuptools import setup
 
 APP_NAME = 'VTA'
-APP = ['video_to_audio_main.py']
+APP = ['main.py']
 DATA_FILES = []
 OPTIONS = {
     'packages': ['altgraph',

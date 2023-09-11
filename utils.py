@@ -17,9 +17,11 @@ def get_parsed_filepath(file_path: str) -> list:
     return [file_path[:slash_index + 1], file_path[slash_index + 1:dot_index]]
 
 
-def download_from_youtube(uri: str, func, output_type: str = 'Video', path_to_save: str = None):
+# def download_from_youtube(uri: str, func, output_type: str = 'Video', path_to_save: str = None):
+def download_from_youtube(uri: str, output_type: str = 'Video', path_to_save: str = None):
     print('utils here')
-    video = YouTube(uri, on_progress_callback=func)
+    # video = YouTube(uri, on_progress_callback=func)
+    video = YouTube(uri)
     print('utils after')
     file_name = video.streams.get_highest_resolution().title
     file_extension = video.streams.get_highest_resolution().subtype

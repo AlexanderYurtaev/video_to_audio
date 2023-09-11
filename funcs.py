@@ -16,7 +16,7 @@ def video_to_audio(video_location: str, cut_start=0, cut_end=None, youtube: bool
     :return:
     """
     if 'https://www.youtube' in video_location or 'https://youtu' in video_location:
-        video_location = download_from_youtube(video_location)
+        video_location = download_from_youtube(uri=video_location)
         youtube = True
 
     parsed_file_path = get_parsed_filepath(video_location)
